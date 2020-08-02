@@ -2,21 +2,46 @@
 #include <SDL2/SDL.h>
 #include "Tile.h"
 #include <vector>
-#include <time.h>
 #include <chrono>
+#include <stdlib.h>
+#include <time.h>
+#include <algorithm>
 
 const int WIDTH = 1920, HEIGHT = 1080;
+const int SQUARE_SIZE = 900;
+const int HORIZONTAL_BORDER_SIZE = (WIDTH - 2*SQUARE_SIZE)/3;
+const int VERTICAL_BORDER_SIZE = (HEIGHT - SQUARE_SIZE)/2;
 
 using namespace std;
 
 int main (int argc, char* argv[]) {
+    /*
     int sideLength;
     cout << "Enter matrix side length: ";
-    cin >> sideLength;
+    cin >> sideLength; */
 
-    Board board(sideLength);
+    srand (time(NULL));
 
+    vector<RGB> RGBLeft;
+    vector<RGB> RGBRight;
+    vector<int> RowRangeEndsLeft;
+    vector<int> RowRangeEndsRight;
+    vector<vector<int>> ColumnRangeEndsLeft;
+    vector<vector<int>> ColumnRangeEndsRight;
 
+    RGBLeft.resize(SQUARE_SIZE*SQUARE_SIZE);
+    RGBRight.resize(SQUARE_SIZE*SQUARE_SIZE);
+    RowRangeEndsLeft.resize(SQUARE_SIZE);
+    RowRangeEndsRight.resize(SQUARE_SIZE);
+    ColumnRangeEndsLeft.resize(SQUARE_SIZE);
+    ColumnRangeEndsRight.resize(SQUARE_SIZE);
+
+    for (int i = 0; i < SQUARE_SIZE; ++i) {
+        RowRangeEndsLeft[i] = i*SQUARE_SIZE;
+        RowRangeEndsRight[i] = i*SQUARE_SIZE;
+        ColumnRangeEndsLeft[i].resize(SQUARE_SIZE);
+        ColumnRangeEndsRight[i].resize(SQUARE_SIZE);
+    }
 
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -31,62 +56,33 @@ int main (int argc, char* argv[]) {
     }
 
     // Enable fullscreen. Causes weird resizing error on alt-tab.
-    //SDL_SetWindowFullscreen(appWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_SetWindowFullscreen(appWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     // Initialize renderer. Set black background.
     SDL_Renderer* renderer = SDL_CreateRenderer(appWindow, -1, 0);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-/*
     auto start = chrono::steady_clock::now();
     SDL_Rect rect;
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    for (int i = 0; i < sideLength*sideLength; ++i) {
-        //cout << "i: " << i << " | row: " << i/sideLength << " | column: " << i%sideLength << endl;
-        Tile tile = board.getBoard()[i/sideLength].getRow()[i%sideLength];
-        rect = tile.getRect();
+    for (int i = 0; i < SQUARE_SIZE*SQUARE_SIZE; ++i) {
+        RGB rgb(0, 0, 0);
+        RGBLeft[i] = rgb;
+        ColumnRangeEndsLeft[i/SQUARE_SIZE][i%SQUARE_SIZE] = i%900;
+        rect = {(i/SQUARE_SIZE), (i%SQUARE_SIZE)+VERTICAL_BORDER_SIZE, 1, 1}; 
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    for (int i = 0; i < SQUARE_SIZE*SQUARE_SIZE; ++i) {
+        RGB rgb(0, 0, 0);
+        RGBRight[i] = rgb;
+        ColumnRangeEndsRight[i/SQUARE_SIZE][i%SQUARE_SIZE] = i%900;
+        rect = {(i/SQUARE_SIZE)+HORIZONTAL_BORDER_SIZE*2+SQUARE_SIZE, (i%SQUARE_SIZE)+VERTICAL_BORDER_SIZE, 1, 1}; 
         SDL_RenderFillRect(renderer, &rect);
     }
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
-    cout << chrono::duration <double, milli> (diff).count()/1000 << " s" << endl;*/
-
-    /*
-    
-    
-    SDL isn't slow. Your board/row/tile data structures are.
-
-
-
-    */
-
-    auto start = chrono::steady_clock::now();
-    SDL_Rect rect;
-    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    for (int i = 0; i < 1080*1080; ++i) {
-        SDL_SetRenderDrawColor(renderer, i%32, i%32, i%32, 255);
-        rect = {420+i/1080, i%1080, 1, 1};
-        SDL_RenderFillRect(renderer, &rect);
-    }
-    auto end = chrono::steady_clock::now();
-    auto diff = end - start;
-    cout << chrono::duration <double, milli> (diff).count()/1000 << " s" << endl;
-
-    /*
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    rect = {960, 500, 1, 1}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1060, 500, 2, 2}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1160, 500, 3, 3}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1260, 500, 4, 4}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1360, 500, 5, 5}; SDL_RenderFillRect(renderer, &rect);
-    rect = {960, 600, 6, 6}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1060, 600, 7, 7}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1160, 600, 8, 8}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1260, 600, 9, 9}; SDL_RenderFillRect(renderer, &rect);
-    rect = {1360, 600, 10, 10}; SDL_RenderFillRect(renderer, &rect);
-    */
-             
+    cout << chrono::duration <double> (diff).count() << " s" << endl;
 
     SDL_RenderPresent(renderer);
 
@@ -98,6 +94,17 @@ int main (int argc, char* argv[]) {
                 break;
             }
         }
+        for (int i = 0; i < SQUARE_SIZE; ++i) {
+            int randomTarget = rand() % RowRangeEndsLeft[SQUARE_SIZE-1];
+            vector<int>::iterator targetRow = upper_bound(RowRangeEndsLeft.begin(), RowRangeEndsLeft.end(), randomTarget);
+            int rowIndex = targetRow - RowRangeEndsLeft.begin();
+            randomTarget -= RowRangeEndsLeft[rowIndex-1];
+            vector<int>::iterator targetColumn = upper_bound(ColumnRangeEndsLeft[rowIndex].begin(), ColumnRangeEndsLeft[rowIndex].end(), randomTarget);
+            int columnIndex = targetColumn - ColumnRangeEndsLeft[rowIndex].begin();
+
+            if (i == 0) cout << rowIndex << " " << columnIndex << endl;
+        }
+        
     }
 
     SDL_DestroyWindow(appWindow);
