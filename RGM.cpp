@@ -2,20 +2,21 @@
 #include <SDL2/SDL.h>
 #include "Tile.h"
 #include <vector>
+#include <time.h>
+#include <chrono>
 
 const int WIDTH = 1920, HEIGHT = 1080;
 
 using namespace std;
-
-void colorConversionTest();
-Board makeBoard(int sideLength);
 
 int main (int argc, char* argv[]) {
     int sideLength;
     cout << "Enter matrix side length: ";
     cin >> sideLength;
 
-    makeBoard(sideLength);
+    Board board(sideLength);
+
+
 
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -37,14 +38,55 @@ int main (int argc, char* argv[]) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-    SDL_Rect rect({(1920-sideLength)/2, (1080-sideLength)/2, sideLength, sideLength});
-    SDL_RenderFillRect(renderer, &rect);
+/*
+    auto start = chrono::steady_clock::now();
+    SDL_Rect rect;
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    for (int i = 0; i < sideLength*sideLength; ++i) {
+        //cout << "i: " << i << " | row: " << i/sideLength << " | column: " << i%sideLength << endl;
+        Tile tile = board.getBoard()[i/sideLength].getRow()[i%sideLength];
+        rect = tile.getRect();
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+    cout << chrono::duration <double, milli> (diff).count()/1000 << " s" << endl;*/
 
+    /*
+    
+    
+    SDL isn't slow. Your board/row/tile data structures are.
+
+
+
+    */
+
+    auto start = chrono::steady_clock::now();
+    SDL_Rect rect;
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    for (int i = 0; i < 1080*1080; ++i) {
+        SDL_SetRenderDrawColor(renderer, i%32, i%32, i%32, 255);
+        rect = {420+i/1080, i%1080, 1, 1};
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+    cout << chrono::duration <double, milli> (diff).count()/1000 << " s" << endl;
+
+    /*
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    rect = {540, 0, 100, 100};
-    SDL_RenderFillRect(renderer, &rect);
-
+    rect = {960, 500, 1, 1}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1060, 500, 2, 2}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1160, 500, 3, 3}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1260, 500, 4, 4}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1360, 500, 5, 5}; SDL_RenderFillRect(renderer, &rect);
+    rect = {960, 600, 6, 6}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1060, 600, 7, 7}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1160, 600, 8, 8}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1260, 600, 9, 9}; SDL_RenderFillRect(renderer, &rect);
+    rect = {1360, 600, 10, 10}; SDL_RenderFillRect(renderer, &rect);
+    */
+             
 
     SDL_RenderPresent(renderer);
 
@@ -62,101 +104,4 @@ int main (int argc, char* argv[]) {
     SDL_Quit();
 
     return EXIT_SUCCESS;
-}
-
-void colorConversionTest() {
-    RGB
-        black(0, 0, 0),
-        white(255, 255, 255),
-        red(255, 0, 0),
-        lime(0, 255, 0),
-        blue(0, 0, 255),
-        yellow(255, 255, 0),
-        cyan(0, 255, 255),
-        magenta(255, 0, 255),
-        silver(191, 191, 191),
-        grey(128, 128, 128),
-        maroon(128, 0, 0),
-        olive(128, 128, 0),
-        green(0, 128, 0),
-        purple(128, 0, 128),
-        teal(0, 128, 128),
-        navy(0, 0, 128);
-
-    HSV
-        hblack = RGBtoHSV(black),
-        hwhite = RGBtoHSV(white),
-        hred = RGBtoHSV(red), 
-        hlime = RGBtoHSV(lime),
-        hblue = RGBtoHSV(blue),
-        hyellow = RGBtoHSV(yellow),
-        hcyan = RGBtoHSV(cyan),
-        hmagenta = RGBtoHSV(magenta),
-        hsilver = RGBtoHSV(silver),
-        hgrey = RGBtoHSV(grey),
-        hmaroon = RGBtoHSV(maroon),
-        holive = RGBtoHSV(olive),
-        hgreen = RGBtoHSV(green),
-        hpurple = RGBtoHSV(purple),
-        hteal = RGBtoHSV(teal),
-        hnavy = RGBtoHSV(navy);
-
-    RGB
-        rblack = HSVtoRGB(hblack),
-        rwhite = HSVtoRGB(hwhite),
-        rred = HSVtoRGB(hred), 
-        rlime = HSVtoRGB(hlime),
-        rblue = HSVtoRGB(hblue),
-        ryellow = HSVtoRGB(hyellow),
-        rcyan = HSVtoRGB(hcyan),
-        rmagenta = HSVtoRGB(hmagenta),
-        rsilver = HSVtoRGB(hsilver),
-        rgrey = HSVtoRGB(hgrey),
-        rmaroon = HSVtoRGB(hmaroon),
-        rolive = HSVtoRGB(holive),
-        rgreen = HSVtoRGB(hgreen),
-        rpurple = HSVtoRGB(hpurple),
-        rteal = HSVtoRGB(hteal),
-        rnavy = HSVtoRGB(hnavy);
-    
-    cout << "RGBtoHSV: " << endl;
-    cout << "Black: " << hblack.hue << " " << hblack.saturation << " " << hblack.value << endl;
-    cout << "White: " << hwhite.hue << " " << hwhite.saturation << " " << hwhite.value << endl;
-    cout << "Red: " << hred.hue << " " << hred.saturation << " " << hred.value << endl;
-    cout << "Lime: " << hlime.hue << " " << hlime.saturation << " " << hlime.value << endl;
-    cout << "Blue: " << hblue.hue << " " << hblue.saturation << " " << hblue.value << endl;
-    cout << "Yellow: " << hyellow.hue << " " << hyellow.saturation << " " << hyellow.value << endl;
-    cout << "Cyan: " << hcyan.hue << " " << hcyan.saturation << " " << hcyan.value << endl;
-    cout << "Magenta: " << hmagenta.hue << " " << hmagenta.saturation << " " << hmagenta.value << endl;
-    cout << "Silver: " << hsilver.hue << " " << hsilver.saturation << " " << hsilver.value << endl;
-    cout << "Grey: " << hgrey.hue << " " << hgrey.saturation << " " << hgrey.value << endl;
-    cout << "Maroon: " << hmaroon.hue << " " << hmaroon.saturation << " " << hmaroon.value << endl;
-    cout << "Olive: " << holive.hue << " " << holive.saturation << " " << holive.value << endl;
-    cout << "Green: " << hgreen.hue << " " << hgreen.saturation << " " << hgreen.value << endl;
-    cout << "Purple: " << hpurple.hue << " " << hpurple.saturation << " " << hpurple.value << endl;
-    cout << "Teal: " << hteal.hue << " " << hteal.saturation << " " << hteal.value << endl;
-    cout << "Navy: " << hnavy.hue << " " << hnavy.saturation << " " << hnavy.value << endl;
-
-    cout << endl << "HSVtoRGB: " << endl;
-    cout << "Black: " << rblack.red << " " << rblack.green << " " << rblack.blue << endl;
-    cout << "Write: " << rwhite.red << " " << rwhite.green << " " << rwhite.blue << endl;
-    cout << "Red: " << rred.red << " " << rred.green << " " << rred.blue << endl;
-    cout << "Lime: " << rlime.red << " " << rlime.green << " " << rlime.blue << endl;
-    cout << "Blue: " << rblue.red << " " << rblue.green << " " << rblue.blue << endl;
-    cout << "Yellow: " << ryellow.red << " " << ryellow.green << " " << ryellow.blue << endl;
-    cout << "Cyan: " << rcyan.red << " " << rcyan.green << " " << rcyan.blue << endl;
-    cout << "Magenta: " << rmagenta.red << " " << rmagenta.green << " " << rmagenta.blue << endl;
-    cout << "Silver: " << rsilver.red << " " << rsilver.green << " " << rsilver.blue << endl;
-    cout << "Grey: " << rgrey.red << " " << rgrey.green << " " << rgrey.blue << endl;
-    cout << "Maroon: " << rmaroon.red << " " << rmaroon.green << " " << rmaroon.blue << endl;
-    cout << "Olive: " << rolive.red << " " << rolive.green << " " << rolive.blue << endl;
-    cout << "Green: " << rgreen.red << " " << rgreen.green << " " << rgreen.blue << endl;
-    cout << "Purple: " << rpurple.red << " " << rpurple.green << " " << rpurple.blue << endl;
-    cout << "Teal: " << rteal.red << " " << rteal.green << " " << rteal.blue << endl;
-    cout << "Navy: " << rnavy.red << " " << rnavy.green << " " << rnavy.blue << endl;
-}
-
-Board boardManager(int sideLength) {
-
-    
 }

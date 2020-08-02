@@ -22,33 +22,46 @@ class Tile {
     private:
         float tileWeight;
         SDL_Rect rect;
+        RGB rgb;
 
     public:
-        Tile();
         Tile(SDL_Rect rect);
 
         float getTileWeight();
+        SDL_Rect getRect();
+        RGB getRGB();
+
+        void setTileWeight(float tileWeight);
+        void setRect(SDL_Rect rect);
+        void setRGB(RGB rgb);
+
         void changeTileHue(int colorChangeAmount);
 };
 
 class Row {
     private:
-        vector<Tile> row;
+        std::vector<Tile> row;
         float rowWeight;
 
     public:
-        Row();
+        Row(int rowNumber, int sideLength);
+
+        std::vector<Tile> getRow();
         float getRowWeight();
+
+        void setRowWeight(float rowWeight);
 };
 
 class Board {
     private:
-        vector<Row> board;
+        std::vector<Row> board;
         int sideLength;
     
     public:
-        Board();
         Board(int sideLength);
 
+        std::vector<Row> getBoard();
         int getSideLength();
 };
+
+void colorConversionTest();
